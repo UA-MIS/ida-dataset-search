@@ -1,4 +1,22 @@
 @import "tailwindcss";
+@plugin "daisyui";
+
+/* 
+Making sure tailwind and daisyUI work correctly:
+
+When you create the next-app, make sure to ask "Yes" for Tailwind
+
+Go to this website 
+https://tailwindcss.com/docs/installation/using-postcss
+
+Edit the postcss.config.mjs file to look the postcss.config.mjs file in Step 2 of the webstie
+Make sure "@import "tailwindcss"; is at the top of your CSS file... don't forget the ;
+
+Then go to this site: https://daisyui.com/docs/install/
+Do both step 1 and 2 in the command line
+Among the framework installation tutorials, find the the NextJS icon and click on it
+Disregard steps 1 and 2, and just double check your globals.css and postcss.config.mjs against these files again
+*/
 
 :root {
   --background: #ffffff;
@@ -23,4 +41,43 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Modal and dropdown improvements */
+.modal {
+  z-index: 1000;
+}
+
+.modal-box {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* React Select improvements */
+.react-select__control {
+  border-radius: 8px !important;
+  min-height: 42px !important;
+}
+
+.react-select__menu {
+  z-index: 9999 !important;
+}
+
+.react-select__option {
+  padding: 8px 12px !important;
+}
+
+.react-select__multi-value {
+  border-radius: 6px !important;
+  margin: 2px !important;
+}
+
+/* Form improvements */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 40px;
 }
