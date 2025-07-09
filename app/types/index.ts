@@ -4,11 +4,19 @@ export interface Dataset {
   description?: string;
   category: string;
   tags: string[];
+  categories: string[];
 }
 
 export interface Tag {
   id: number;
   name: string;
+  usage_count?: number;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  usage_count?: number;
 }
 
 export interface User {

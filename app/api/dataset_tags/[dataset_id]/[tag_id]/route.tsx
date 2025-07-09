@@ -15,7 +15,9 @@ export async function DELETE(
         },
       },
     });
-    return NextResponse.json({ message: "Dataset tags deleted successfully" });
+    return NextResponse.json({
+      message: "Dataset tags deleted successfully",
+    });
   } catch (error) {
     console.error("Error deleting dataset tags:", error);
     return NextResponse.json(

@@ -12,16 +12,15 @@ export async function POST(request: NextRequest) {
 
   //validation goes here
 
-//   const dataset = await prisma.datasets.findUnique({
-//     where: { title: body.title },
-//   });
+  //   const dataset = await prisma.datasets.findUnique({
+  //     where: { title: body.title },
+  //   });
 
-//   if (dataset) return NextResponse.json({ error: "User already exists" });
+  //   if (dataset) return NextResponse.json({ error: "User already exists" });
 
   const newDataset = await prisma.datasets.create({
     data: {
       title: body.title,
-      category: body.category,
       description: body.description,
     },
   });

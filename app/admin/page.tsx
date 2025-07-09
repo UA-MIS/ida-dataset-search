@@ -1,24 +1,24 @@
 "use client";
 import StatCard from "../components/StatCard";
 import ActivityItem from "../components/ActivityItem";
-import { categories } from "../constants";
 import { useFetchDatasets } from "../hooks/useFetchDatasets";
 import { useFetchTags } from "../hooks/useFetchTags";
 import { useFetchUsers } from "../hooks/useFetchUsers";
+import { useFetchCategories } from "../hooks/useFetchCategories";
 
 export default function AdminDashboard() {
   const { datasets, isLoading } = useFetchDatasets();
   const { tags, isLoading: tagsLoading } = useFetchTags();
   const { users, isLoading: usersLoading } = useFetchUsers();
-
+  const { categories, isLoading: categoriesLoading } = useFetchCategories();
   return (
     <>
       <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard title="Total Datasets" value={datasets.length} />
-              <StatCard title="Active Users" value={users.length} />
-              <StatCard title="Total Tags" value={tags.length} />
-              <StatCard title="Categories" value={categories.length} />
+              <StatCard title="Total Datasets" value={datasets.length || "..."} />
+              <StatCard title="Active Users" value={users.length || "..."} />
+              <StatCard title="Total Tags" value={tags.length || "..."} />
+              <StatCard title="Categories" value={categories.length || "..."} />
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
               <div className="flex justify-between items-center mb-6">

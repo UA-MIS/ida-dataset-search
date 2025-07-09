@@ -8,30 +8,37 @@ import SidebarFilter from "@/app/components/SidebarFilter";
 import Modal from "@/app/components/Modal";
 import EditDatasetForm from "@/app/components/EditDatasetForm";
 import AddDataForm from "@/app/components/AddDataForm";
+import ConfirmationMessage from "@/app/components/ConfirmationMessage";
 import { useSearchbar } from "@/app/hooks/useSearchbar";
 import { useFetchDatasets } from "@/app/hooks/useFetchDatasets";
 import { useDeleteDataset } from "@/app/hooks/useDeleteDataset";
 import { useFetchTags } from "@/app/hooks/useFetchTags";
+import { useFetchCategories } from "@/app/hooks/useFetchCategories";
 import { useSidebarFilter } from "@/app/hooks/useSidebarFilter";
-import { categories } from "@/app/constants";
-import Toast from "@/app/components/Toast";
 import { Dataset } from "@/app/types";
+import { useModal } from "@/app/hooks/useModal";
 
 const Datasets = () => {
   const { datasets, isLoading: datasetsLoading, refetch } = useFetchDatasets();
   const { tags, isLoading: tagsLoading } = useFetchTags();
+  const { categories, isLoading: categoriesLoading } = useFetchCategories();
   const [showFilters, setShowFilters] = useState(false);
   const [editingDataset, setEditingDataset] = useState<Dataset | null>(null);
+  const [deletingDataset, setDeletingDataset] = useState<Dataset | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [formKey, setFormKey] = useState(0); // Add formKey state
   // Create delete hook with refresh callback
   const { deleteDataset, isSuccess: deleteSuccess } = useDeleteDataset(refetch);
 
-  const { handleFilterChange, filterDatasets } = useSidebarFilter(
-    categories,
+  const { handleFilterChange, filterDatasets, filterState } = useSidebarFilter(
+    categories?.map((category) => category.name) || [],
     tags?.map((tag) => tag.name) || []
   );
 
-  const { handleSearch, filteredDatasets: searchFilteredDatasets } =
-    useSearchbar(datasets || []);
+  const { handleSearch, filteredItems: searchFilteredDatasets } = useSearchbar(
+    datasets || [],
+    "title"
+  );
 
   // First apply sidebar filters, then apply search filter
   const sidebarFilteredDatasets = datasets ? filterDatasets(datasets) : [];
@@ -41,41 +48,77 @@ const Datasets = () => {
     )
   );
 
-  // Handle modal opening when editingDataset changes
-  useEffect(() => {
-    if (editingDataset) {
-      const modal = document.getElementById(
-        "edit-dataset-modal"
-      ) as HTMLDialogElement;
-      if (modal) {
-        // Small delay to ensure the modal is properly rendered
-        setTimeout(() => {
-          modal.showModal();
-        }, 50);
-      }
-    }
-  }, [editingDataset]);
-
   const handleEdit = (dataset: Dataset) => {
     setEditingDataset(dataset);
+    useModal("edit-dataset-modal");
   };
 
   const handleEditSuccess = () => {
-    setEditingDataset(null);
     const modal = document.getElementById(
       "edit-dataset-modal"
     ) as HTMLDialogElement;
-    if (modal) modal.close();
+    modal?.close();
+    setEditingDataset(null);
     refetch(); // Refresh the datasets list
   };
 
   const handleEditCancel = () => {
-    setEditingDataset(null);
     const modal = document.getElementById(
       "edit-dataset-modal"
     ) as HTMLDialogElement;
-    if (modal) modal.close();
+    modal?.close();
+    setEditingDataset(null);
   };
+
+  const handleDeleteDataset = async (dataset: Dataset) => {
+    setDeleteLoading(true);
+    const success = await deleteDataset(dataset.id);
+    if (success) {
+      setDeletingDataset(null);
+      const modal = document.getElementById(
+        "delete-dataset-modal"
+      ) as HTMLDialogElement;
+      modal?.close();
+      window.location.reload();
+    }
+    setDeleteLoading(false);
+  };
+
+  const confirmDeleteDataset = (dataset: Dataset) => {
+    setDeletingDataset(dataset);
+    useModal("delete-dataset-modal");
+  };
+
+  const cancelDeleteDataset = () => {
+    setDeletingDataset(null);
+    const modal = document.getElementById(
+      "delete-dataset-modal"
+    ) as HTMLDialogElement;
+    modal?.close();
+  };
+
+  const handleAddDatasetModalClose = () => {
+    const modal = document.getElementById(
+      "add-dataset-modal"
+    ) as HTMLDialogElement;
+    modal?.close();
+    setFormKey((k) => k + 1);
+  };
+
+  // Add useEffect to handle modal close event
+  React.useEffect(() => {
+    const modal = document.getElementById(
+      "add-dataset-modal"
+    ) as HTMLDialogElement;
+    if (!modal) return;
+
+    const handleClose = () => setFormKey((k) => k + 1);
+
+    modal.addEventListener("close", handleClose);
+    return () => {
+      modal.removeEventListener("close", handleClose);
+    };
+  }, []);
 
   return (
     <>
@@ -85,10 +128,7 @@ const Datasets = () => {
           <h1 className="text-2xl font-semibold">Datasets</h1>
           <button
             onClick={() => {
-              const modal = document.getElementById(
-                "add-dataset-modal"
-              ) as HTMLDialogElement;
-              modal?.showModal();
+              useModal("add-dataset-modal");
             }}
             className="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
           >
@@ -110,7 +150,9 @@ const Datasets = () => {
 
         {/* Search and Filter Section */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h1 className="text-xl font-semibold text-red-800">Search and Filter Datasets</h1>
+          <h1 className="text-xl font-semibold text-red-800">
+            Search and Filter Datasets
+          </h1>
           <br></br>
           <div className="space-y-4">
             {/* Search Bar */}
@@ -158,10 +200,13 @@ const Datasets = () => {
                   <div>
                     <SidebarFilter
                       title="Categories"
-                      options={categories.sort()}
+                      options={
+                        categories?.map((category) => category.name) || []
+                      }
                       onFilterChange={(value) =>
                         handleFilterChange("categories", value)
                       }
+                      selected={Array.from(filterState.categories)}
                     />
                   </div>
                   <div>
@@ -171,6 +216,7 @@ const Datasets = () => {
                       onFilterChange={(value) =>
                         handleFilterChange("tags", value)
                       }
+                      selected={Array.from(filterState.tags)}
                     />
                   </div>
                 </div>
@@ -193,9 +239,9 @@ const Datasets = () => {
                 <DatasetCard
                   key={dataset.id}
                   title={dataset.title}
-                  category={dataset.category}
+                  categories={dataset.categories || []}
                   tags={dataset.tags || []}
-                  onDelete={() => deleteDataset(dataset.id)}
+                  onDelete={() => confirmDeleteDataset(dataset)}
                   onEdit={() => handleEdit(dataset)}
                 />
               ))}
@@ -215,32 +261,54 @@ const Datasets = () => {
       <Modal
         id="add-dataset-modal"
         header="Add New Dataset"
-        body={<AddDataForm onSuccess={refetch} />}
+        body={
+          <AddDataForm
+            key={formKey}
+            onSuccess={refetch}
+            modalId="add-dataset-modal"
+          />
+        }
+        size="xl"
       />
 
       {/* Edit Dataset Modal */}
-      {editingDataset && (
-        <Modal
-          id="edit-dataset-modal"
-          header="Edit Dataset"
-          body={
+      <Modal
+        id="edit-dataset-modal"
+        header="Edit Dataset"
+        body={
+          editingDataset ? (
             <EditDatasetForm
               dataset={editingDataset}
               onSuccess={handleEditSuccess}
               onCancel={handleEditCancel}
             />
-          }
-        />
-      )}
-
-      {deleteSuccess && (
-        <Toast
-          message="Dataset deleted successfully!"
-          color="success"
-          duration={3000}
-          onClose={() => {}}
-        />
-      )}
+          ) : (
+            <div>Loading...</div>
+          )
+        }
+        size="xl"
+      />
+      <Modal
+        id="delete-dataset-modal"
+        header="Delete Dataset"
+        body={
+          deletingDataset ? (
+            <ConfirmationMessage
+              title="Delete Dataset"
+              message={`Are you sure you want to delete the dataset "${deletingDataset.title}"? This action cannot be undone.`}
+              confirmText="Delete Dataset"
+              cancelText="Cancel"
+              variant="danger"
+              onConfirm={() => handleDeleteDataset(deletingDataset)}
+              onCancel={cancelDeleteDataset}
+              loading={deleteLoading}
+            />
+          ) : (
+            <div>Loading...</div>
+          )
+        }
+        size="md"
+      />
     </>
   );
 };

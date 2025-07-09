@@ -1,14 +1,17 @@
 "use client";
 import React, { useState } from "react";
-import Modal from "@/app/components/Modal";
 import Table from "@/app/components/Table";
 import { useFetchUsers } from "@/app/hooks/useFetchUsers";
 import { useDeleteUser } from "@/app/hooks/useDeleteUser";
 import Toast from "@/app/components/Toast";
 import { useUpdateUser } from "@/app/hooks/useUpdateUser";
+import { useModal } from "@/app/hooks/useModal";
+import ConfirmationMessage from "@/app/components/ConfirmationMessage";
+import Modal from "@/app/components/Modal";
 
 const Users = () => {
   const { users, isLoading: usersLoading, refreshUsers } = useFetchUsers();
+  const [deletingUser, setDeletingUser] = useState<any>(null);
   const {
     updateUser,
     isUpdating,
@@ -21,6 +24,33 @@ const Users = () => {
     error: deleteError,
     isSuccess: deleteSuccess,
   } = useDeleteUser();
+
+  const handleDeleteUser = async (user: any) => {
+    try {
+      await deleteUser(user.id);
+      setDeletingUser(null);
+      const modal = document.getElementById(
+        "delete-user-modal"
+      ) as HTMLDialogElement;
+      modal?.close();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
+  };
+
+  const confirmDeleteUser = (user: any) => {
+    setDeletingUser(user);
+    useModal("delete-user-modal");
+  };
+
+  const cancelDeleteUser = () => {
+    setDeletingUser(null);
+    const modal = document.getElementById(
+      "delete-user-modal"
+    ) as HTMLDialogElement;
+    modal?.close();
+  };
+
   return (
     <>
       <div className="space-y-6">
@@ -28,10 +58,7 @@ const Users = () => {
           <h2 className="text-2xl font-semibold">User Management</h2>
           <button
             onClick={() => {
-              const modal = document.getElementById(
-                "add-user-modal"
-              ) as HTMLDialogElement;
-              modal?.showModal();
+              useModal("add-user-modal");
             }}
             className="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
           >
@@ -79,14 +106,7 @@ const Users = () => {
                       Delete: (
                         <button
                           className="btn btn-error"
-                          onClick={async () => {
-                            try {
-                              await deleteUser(user.id);
-                              refreshUsers();
-                            } catch (error) {
-                              console.error("Error deleting user:", error);
-                            }
-                          }}
+                          onClick={() => confirmDeleteUser(user)}
                         >
                           Delete
                         </button>
@@ -131,6 +151,27 @@ const Users = () => {
           onClose={() => {}}
         />
       )}
+      <Modal
+        id="delete-user-modal"
+        header="Delete User"
+        body={
+          deletingUser ? (
+            <ConfirmationMessage
+              title="Delete User"
+              message={`Are you sure you want to delete the user "${deletingUser.first_name} ${deletingUser.last_name}"? This action cannot be undone.`}
+              confirmText="Delete User"
+              cancelText="Cancel"
+              variant="danger"
+              onConfirm={() => handleDeleteUser(deletingUser)}
+              onCancel={cancelDeleteUser}
+              loading={isDeletingUser}
+            />
+          ) : (
+            <div>Loading...</div>
+          )
+        }
+        size="md"
+      />
     </>
   );
 };

@@ -3,9 +3,9 @@ import React, { useEffect } from "react";
 import DatasetContainer from "./components/DatasetContainer";
 import DatasetSkeleton from "./components/DatasetSkeleton";
 import NoResultsMessage from "./components/NoResultsMessage";
-import { categories } from "./constants";
 import { useFetchDatasets } from "./hooks/useFetchDatasets";
 import { useFetchTags } from "./hooks/useFetchTags";
+import { useFetchCategories } from "./hooks/useFetchCategories";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
 import SidebarFilter from "./components/SidebarFilter";
@@ -16,15 +16,24 @@ import { useSearchbar } from "./hooks/useSearchbar";
 const HomePage = () => {
   const { datasets, isLoading: datasetsLoading } = useFetchDatasets();
   const { tags, isLoading: tagsLoading } = useFetchTags();
-  const isLoading = datasetsLoading || tagsLoading || !datasets || !tags;
+  const { categories, isLoading: categoriesLoading } = useFetchCategories();
+  const isLoading =
+    datasetsLoading ||
+    tagsLoading ||
+    categoriesLoading ||
+    !datasets ||
+    !tags ||
+    !categories;
 
-  const { handleFilterChange, filterDatasets } = useSidebarFilter(
-    categories,
+  const { handleFilterChange, filterDatasets, filterState } = useSidebarFilter(
+    categories?.map((category) => category.name) || [],
     tags?.map((tag) => tag.name) || []
   );
 
-  const { handleSearch, filteredDatasets: searchFilteredDatasets } =
-    useSearchbar(datasets || []);
+  const { handleSearch, filteredItems: searchFilteredDatasets } = useSearchbar(
+    datasets || [],
+    "title"
+  );
 
   // First apply sidebar filters, then apply search filter
   const sidebarFilteredDatasets = datasets ? filterDatasets(datasets) : [];
@@ -68,7 +77,7 @@ const HomePage = () => {
                     id={dataset.id}
                     title={dataset.title}
                     tags={dataset.tags || []}
-                    category={dataset.category || ""}
+                    categories={dataset.categories || []}
                   />
                 ))
               )}
@@ -80,16 +89,18 @@ const HomePage = () => {
             <div className="flex flex-col pt-2">
               <SidebarFilter
                 title="Categories"
-                options={categories.sort()}
+                options={categories?.map((category) => category.name) || []}
                 onFilterChange={(value) =>
                   handleFilterChange("categories", value)
                 }
+                selected={Array.from(filterState.categories)}
               />
               <div className="divider"></div>
               <SidebarFilter
                 title="Tags"
                 options={tags?.map((tag) => tag.name) || []}
                 onFilterChange={(value) => handleFilterChange("tags", value)}
+                selected={Array.from(filterState.tags)}
               />
             </div>
           </>

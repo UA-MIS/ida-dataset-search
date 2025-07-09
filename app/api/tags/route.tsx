@@ -5,6 +5,7 @@ import { prisma } from "@/prisma/client";
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const name = searchParams.get("name");
+  const withUsage = searchParams.get("withUsage");
 
   if (name) {
     const tags = await prisma.tags.findMany({
@@ -15,6 +16,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(tags);
   }
 
+  if (withUsage === "true") {
+    // Fetch tags and join usage_count from tag_usage_summary
+    const tags = await prisma.tags.findMany();
+    const usageSummary = await prisma.tag_usage_summary.findMany();
+    // Merge usage_count into tags
+    const tagsWithUsage = tags.map((tag) => {
+      const usage = usageSummary.find((u) => u.tag_id === tag.id);
+      return { ...tag, usage_count: usage?.usage_count ?? 0 };
+    });
+    return NextResponse.json(tagsWithUsage);
+  }
+
   const tags = await prisma.tags.findMany();
   return NextResponse.json(tags);
 }
@@ -22,13 +35,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const body = await request.json();
 
-  //validation goes here
+  const tag = await prisma.tags.findUnique({
+    where: { name: body.name },
+  });
 
-  //   const dataset = await prisma.datasets.findUnique({
-  //     where: { title: body.title },
-  //   });
-
-  //   if (dataset) return NextResponse.json({ error: "User already exists" });
+  if (tag) return NextResponse.json({ error: "Tag already exists" });
 
   const newTag = await prisma.tags.create({
     data: {

@@ -7,9 +7,10 @@ interface Props {
   title: string;
   options: string[];
   onFilterChange: (selectedOption: string) => void;
+  selected: string[];
 }
 
-const SidebarFilter = ({ title, options, onFilterChange }: Props) => {
+const SidebarFilter = ({ title, options, onFilterChange, selected }: Props) => {
   const formRef = useRef<HTMLFormElement>(null);
   const { handleSearch, filteredOptions } = useSidebarSearch(options);
 
@@ -77,7 +78,7 @@ const SidebarFilter = ({ title, options, onFilterChange }: Props) => {
                     type="checkbox"
                     id={option}
                     value={option}
-                    defaultChecked
+                    defaultChecked={selected.includes(option)}
                     onChange={(e) => onFilterChange(e.target.value)}
                   />
                   <label htmlFor={option}>{option}</label>

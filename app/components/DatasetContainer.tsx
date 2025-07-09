@@ -4,10 +4,10 @@ interface Props {
   id: number;
   title: string;
   tags: string[];
-  category: string;
+  categories: string[];
 }
 
-const DatasetContainer = ({ id, title, tags, category }: Props) => {
+const DatasetContainer = ({ id, title, tags, categories }: Props) => {
   return (
     <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
       <div className="card-body p-6">
@@ -16,9 +16,16 @@ const DatasetContainer = ({ id, title, tags, category }: Props) => {
           <h2 className="card-title text-xl font-bold text-gray-800 hover:text-red-600 transition-colors duration-200">
             {title}
           </h2>
-          <span className="badge badge-outline badge-error font-medium">
-            {category}
-          </span>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((category) => (
+              <span
+                key={category}
+                className="badge badge-outline badge-error font-medium"
+              >
+                {category}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Metadata Section */}

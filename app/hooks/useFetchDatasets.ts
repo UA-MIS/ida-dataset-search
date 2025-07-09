@@ -11,23 +11,31 @@ export function useFetchDatasets() {
       const response = await fetch("/api/datasets");
       const datasetsData = await response.json();
 
-      const datasetsWithTags = await Promise.all(
+      const datasetsWithTagsAndCategories = await Promise.all(
         datasetsData.map(async (dataset: any) => {
           const tagsResponse = await fetch(`/api/dataset_tags/${dataset.id}`);
           const tagRelations = await tagsResponse.json();
-
           const tags = tagRelations.map(
+            (relation: { name: string }) => relation.name
+          );
+
+          const categoriesResponse = await fetch(
+            `/api/dataset_categories/${dataset.id}`
+          );
+          const categoryRelations = await categoriesResponse.json();
+          const categories = categoryRelations.map(
             (relation: { name: string }) => relation.name
           );
 
           return {
             ...dataset,
             tags,
+            categories,
           };
         })
       );
 
-      setDatasets(datasetsWithTags);
+      setDatasets(datasetsWithTagsAndCategories);
     } catch (error) {
       console.error("Error fetching datasets:", error);
     } finally {

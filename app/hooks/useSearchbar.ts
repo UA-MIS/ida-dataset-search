@@ -1,39 +1,38 @@
 import { useState, useCallback, useEffect } from "react";
-import { Dataset } from "../types";
 
-export const useSearchbar = (datasets: Dataset[]) => {
+export function useSearchbar<T extends Record<string, any>>(
+  items: T[],
+  key: keyof T = "name"
+) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredDatasets, setFilteredDatasets] = useState<Dataset[]>([]);
+  const [filteredItems, setFilteredItems] = useState<T[]>([]);
 
-  // Initialize filtered datasets when datasets prop changes
   useEffect(() => {
-    setFilteredDatasets(datasets);
-  }, [datasets]);
+    setFilteredItems(items);
+  }, [items]);
 
   const handleSearch = useCallback(
     (query: string) => {
       setSearchQuery(query);
-
       if (!query.trim()) {
-        setFilteredDatasets(datasets);
+        setFilteredItems(items);
         return;
       }
-
-      const filtered = datasets.filter((dataset) => {
-        const matchesSearch = dataset.title
-          .toLowerCase()
-          .includes(query.toLowerCase());
-        return matchesSearch;
+      const filtered = items.filter((item) => {
+        const value = item[key];
+        if (typeof value === "string") {
+          return value.toLowerCase().includes(query.toLowerCase());
+        }
+        return false;
       });
-
-      setFilteredDatasets(filtered);
+      setFilteredItems(filtered);
     },
-    [datasets]
+    [items, key]
   );
 
   return {
     searchQuery,
-    filteredDatasets,
+    filteredItems,
     handleSearch,
   };
-};
+}

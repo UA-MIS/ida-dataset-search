@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/prisma/client";
 
 export async function GET(request: NextRequest) {
-  const datasets = await prisma.dataset_tags.findMany();
+  const datasets = await prisma.dataset_categories.findMany();
   return NextResponse.json(datasets);
 }
 
@@ -17,17 +17,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Dataset not found" }, { status: 404 });
   }
 
-  // Validate tag exists
-  const tag = await prisma.tags.findUnique({
-    where: { id: body.tag_id },
+  // Validate category exists
+  const category = await prisma.categories.findUnique({
+    where: { id: body.category_id },
   });
-  if (!tag) {
-    return NextResponse.json({ error: "Tag not found" }, { status: 404 });
+  if (!category) {
+    return NextResponse.json({ error: "Category not found" }, { status: 404 });
   }
 
   // Prevent duplicate relation
-  const existingRelation = await prisma.dataset_tags.findFirst({
-    where: { dataset_id: body.dataset_id, tag_id: body.tag_id },
+  const existingRelation = await prisma.dataset_categories.findFirst({
+    where: { dataset_id: body.dataset_id, category_id: body.category_id },
   });
   if (existingRelation) {
     return NextResponse.json(
@@ -37,13 +37,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const newDatasetTag = await prisma.dataset_tags.create({
+    const newDatasetCategory = await prisma.dataset_categories.create({
       data: {
         dataset_id: body.dataset_id,
-        tag_id: body.tag_id,
+        category_id: body.category_id,
       },
     });
-    return NextResponse.json(newDatasetTag, { status: 201 });
+    return NextResponse.json(newDatasetCategory, { status: 201 });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to create relation" },

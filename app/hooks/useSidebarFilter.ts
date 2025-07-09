@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 interface FilterState {
   categories: Set<string>;
@@ -9,48 +9,17 @@ export const useSidebarFilter = (
   initialCategories: string[],
   initialTags: string[]
 ) => {
-  const isInitialMount = useRef(true);
-  const prevInitialCategories = useRef(initialCategories);
-  const prevInitialTags = useRef(initialTags);
-
   const [filterState, setFilterState] = useState<FilterState>(() => ({
     categories: new Set(initialCategories),
     tags: new Set(initialTags),
   }));
 
-  // Only update state when initial props change
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      prevInitialCategories.current = initialCategories;
-      prevInitialTags.current = initialTags;
-      return;
-    }
-
-    // Check if the initial props have actually changed
-    const categoriesChanged =
-      !initialCategories.every((cat) =>
-        prevInitialCategories.current.includes(cat)
-      ) ||
-      !prevInitialCategories.current.every((cat) =>
-        initialCategories.includes(cat)
-      );
-    const tagsChanged =
-      !initialTags.every((tag) => prevInitialTags.current.includes(tag)) ||
-      !prevInitialTags.current.every((tag) => initialTags.includes(tag));
-
-    if (categoriesChanged || tagsChanged) {
-      setFilterState({
-        categories: new Set(initialCategories),
-        tags: new Set(initialTags),
-      });
-      prevInitialCategories.current = initialCategories;
-      prevInitialTags.current = initialTags;
-    }
-  }, [initialCategories, initialTags]);
+  // Track if the user has interacted with the filters
+  const userInteracted = useRef(false);
 
   const handleFilterChange = useCallback(
     (filterType: "categories" | "tags", value: string) => {
+      userInteracted.current = true; // Mark as user interaction
       setFilterState((prev) => {
         const newState = { ...prev };
         const currentSet = new Set(newState[filterType]);
@@ -68,29 +37,52 @@ export const useSidebarFilter = (
     []
   );
 
+  // If options go from empty to non-empty, and user hasn't interacted, select all by default
+  useEffect(() => {
+    if (!userInteracted.current) {
+      if (initialCategories.length > 0 && filterState.categories.size === 0) {
+        setFilterState((prev) => ({
+          ...prev,
+          categories: new Set(initialCategories),
+        }));
+      }
+      if (initialTags.length > 0 && filterState.tags.size === 0) {
+        setFilterState((prev) => ({
+          ...prev,
+          tags: new Set(initialTags),
+        }));
+      }
+    }
+    // eslint-disable-next-line
+  }, [initialCategories, initialTags]);
+
   const filterDatasets = useCallback(
     (datasets: any[]) => {
-      const filtered = datasets.filter((dataset) => {
-        // Category filter
-        const matchesCategory = filterState.categories.has(dataset.category);
+      return datasets.filter((dataset) => {
+        // If no categories selected, hide all
+        if (initialCategories.length > 0 && filterState.categories.size === 0)
+          return false;
+        // If no tags selected, hide all
+        if (initialTags.length > 0 && filterState.tags.size === 0) return false;
 
-        // Tag filter - check if any of the dataset's tags are in the selected tags set
+        // Category filter: show if dataset has at least one selected category, or all are selected
+        const matchesCategory =
+          filterState.categories.size === initialCategories.length ||
+          (dataset.categories &&
+            dataset.categories.some((cat: string) =>
+              filterState.categories.has(cat)
+            ));
 
+        // Tag filter: show if dataset has at least one selected tag, or all are selected
         const matchesTags =
-          dataset.tags?.some((tag: string) => {
-            const matches = filterState.tags.has(tag);
-            return matches;
-          }) ?? false;
+          filterState.tags.size === initialTags.length ||
+          (dataset.tags &&
+            dataset.tags.some((tag: string) => filterState.tags.has(tag)));
 
-        // Dataset is shown if it matches both category and tag filters
-        const shouldShow = matchesCategory && matchesTags;
-
-        return shouldShow;
+        return matchesCategory && matchesTags;
       });
-
-      return filtered;
     },
-    [filterState]
+    [filterState, initialCategories.length, initialTags.length]
   );
 
   return {

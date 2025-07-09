@@ -3,18 +3,18 @@ import React from "react";
 interface Props {
   title: string;
   tags: string[];
-  category: string;
+  categories: string[];
   onDelete: () => void;
   onEdit: () => void;
 }
 
-const DatasetCard = ({ title, category, tags, onDelete, onEdit }: Props) => {
+const DatasetCard = ({ title, categories, tags, onDelete, onEdit }: Props) => {
   return (
     <>
       <div className="card bg-base-100 card-lg shadow-sm h-full hover:shadow-lg transition-shadow duration-300">
         <div className="card-body">
           <h2 className="card-title">{title}</h2>
-          <p className="text-sm text-gray-500">{category}</p>
+          <p className="text-sm text-gray-500">{categories.join(" | ")}</p>
           <p className="text-sm text-gray-500">Tags: {tags.join(", ")}</p>
           <p>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse

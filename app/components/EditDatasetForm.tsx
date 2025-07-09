@@ -4,19 +4,17 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import TagInput from "./TagInput";
-import CategorySelect from "./CategorySelect";
+import CategoryInput from "./CategoryInput";
 import Toast from "./Toast";
+import SuccessMessage from "./SuccessMessage";
 import { useUpdateDataset } from "../hooks/useUpdateDataset";
 import { Dataset, Tag } from "../types";
-import { categories } from "@/app/constants";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
   tags: z.array(z.string()).min(1, "At least one tag is required"),
-  category: z.enum(categories as [string, ...string[]], {
-    message: "Please select a category",
-  }),
+  categories: z.array(z.string()).min(1, "At least one category is required"),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -30,6 +28,7 @@ interface Props {
 const EditDatasetForm = ({ dataset, onSuccess, onCancel }: Props) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [existingTags, setExistingTags] = useState<Tag[]>([]);
+  const [existingCategories, setExistingCategories] = useState<string[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(true);
   const { updateDataset, isUpdating, error } = useUpdateDataset();
 
@@ -46,14 +45,24 @@ const EditDatasetForm = ({ dataset, onSuccess, onCancel }: Props) => {
       title: dataset.title,
       description: "", // We'll need to fetch this from the API
       tags: dataset.tags || [],
-      category: dataset.category as any,
+      categories: dataset.categories || [],
     },
   });
 
   const tags = watch("tags");
-  const category = watch("category");
+  const categories = watch("categories");
 
-  // Fetch existing tags on component mount
+  // Reset form values when dataset prop changes
+  useEffect(() => {
+    reset({
+      title: dataset.title,
+      description: "", // Will be set by fetchDatasetDetails
+      tags: dataset.tags || [],
+      categories: dataset.categories || [],
+    });
+  }, [dataset, reset]);
+
+  // Fetch existing tags and categories on component mount
   useEffect(() => {
     const fetchTags = async () => {
       try {
@@ -69,7 +78,25 @@ const EditDatasetForm = ({ dataset, onSuccess, onCancel }: Props) => {
       }
     };
 
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/categories");
+        if (response.ok) {
+          const categories = await response.json();
+          // If categories are objects, map to names
+          setExistingCategories(
+            Array.isArray(categories)
+              ? categories.map((cat: any) => cat.name)
+              : []
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
     fetchTags();
+    fetchCategories();
   }, []);
 
   // Fetch the full dataset data including description when component mounts
@@ -91,28 +118,35 @@ const EditDatasetForm = ({ dataset, onSuccess, onCancel }: Props) => {
 
   const onSubmit = async (data: FormData) => {
     try {
-      await updateDataset(dataset.id, data);
+      await updateDataset(dataset.id, {
+        ...data,
+        category: data.categories[0],
+      });
       setIsSuccess(true);
       setTimeout(() => {
         setIsSuccess(false);
         onSuccess?.();
-      }, 3000);
+        window.location.reload();
+      }, 2000);
     } catch (error) {
       console.error("Error updating dataset:", error);
     }
   };
 
+  // Show success message if successful
+  if (isSuccess) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <SuccessMessage
+          message="Dataset updated successfully!"
+          subMessage="Refreshing page..."
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl mx-auto p-6">
-      {isSuccess && (
-        <Toast
-          message="Dataset updated successfully!"
-          color="success"
-          duration={3000}
-          onClose={() => setIsSuccess(false)}
-        />
-      )}
-
       {error && (
         <Toast
           message={`Error: ${error}`}
@@ -160,15 +194,14 @@ const EditDatasetForm = ({ dataset, onSuccess, onCancel }: Props) => {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="category" className="block text-sm font-medium">
-            Category
+          <label htmlFor="categories" className="block text-sm font-medium">
+            Categories
           </label>
-          <CategorySelect
-            value={category}
-            onChange={(value) => setValue("category", value)}
-            disabled={isUpdating}
+          <CategoryInput
             categories={categories}
-            error={errors.category?.message}
+            onChange={(categories) => setValue("categories", categories)}
+            disabled={isUpdating}
+            existingCategories={existingCategories}
           />
         </div>
 

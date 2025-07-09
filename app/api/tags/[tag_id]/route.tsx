@@ -16,44 +16,44 @@ export async function GET(
 }
 
 export async function PUT(
-    request: NextRequest,
-    { params }: { params: { tag_id: string } }
-  ) {
-    const tag = await prisma.tags.findUnique({
-      where: { id: parseInt(params.tag_id) },
-    });
-  
-    if (!tag) {
-      return NextResponse.json({ error: "Tag not found" }, { status: 404 });
-    }
-  
-    const body = await request.json();
-  
-    const updatedTag = await prisma.tags.update({
-      where: { id: tag.id },
-      data: {
-        name: body.name,
-      },
-    });
-  
-    return NextResponse.json(updatedTag);
+  request: NextRequest,
+  { params }: { params: { tag_id: string } }
+) {
+  const tag = await prisma.tags.findUnique({
+    where: { id: parseInt(params.tag_id) },
+  });
+
+  if (!tag) {
+    return NextResponse.json({ error: "Tag not found" }, { status: 404 });
   }
-  
-  export async function DELETE(
-    request: NextRequest,
-    { params }: { params: { tag_id: string } }
-  ) {
-    const tag = await prisma.tags.findUnique({
-      where: { id: parseInt(params.tag_id) },
-    });
-  
-    if (!tag) {
-      return NextResponse.json({ error: "Tag not found" }, { status: 404 });
-    }
-  
-    await prisma.tags.delete({
-      where: { id: tag.id },
-    });
-  
-    return NextResponse.json({ message: "Tag deleted" });
+
+  const body = await request.json();
+
+  const updatedTag = await prisma.tags.update({
+    where: { id: tag.id },
+    data: {
+      name: body.name,
+    },
+  });
+
+  return NextResponse.json(updatedTag);
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { tag_id: string } }
+) {
+  const tag = await prisma.tags.findUnique({
+    where: { id: parseInt(params.tag_id) },
+  });
+
+  if (!tag) {
+    return NextResponse.json({ error: "Tag not found" }, { status: 404 });
   }
+
+  await prisma.tags.delete({
+    where: { id: tag.id },
+  });
+
+  return NextResponse.json({ message: "Tag deleted" });
+}
