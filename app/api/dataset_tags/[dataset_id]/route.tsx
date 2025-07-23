@@ -7,11 +7,17 @@ export async function GET(
 ) {
   const { dataset_id } = await context.params;
   try {
-    const datasetTags = await prisma.dataset_tags_view.findMany({
-      where: {
-        dataset_id: parseInt(dataset_id),
-      },
-    });
+    const datasetTags = await prisma.$queryRaw`
+    SELECT 
+        CONCAT(dt.dataset_id, '-', dt.tag_id) AS relation_id,
+        dt.dataset_id AS dataset_id,
+        dt.tag_id AS tag_id,
+        t.name AS name
+    FROM
+        (dataset_tags dt
+        JOIN tags t ON ((dt.tag_id = t.id)))
+    WHERE dt.dataset_id = ${dataset_id}
+    `;
 
     return NextResponse.json(datasetTags);
   } catch (error) {
@@ -22,4 +28,3 @@ export async function GET(
     );
   }
 }
-

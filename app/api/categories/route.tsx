@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/prisma/client";
+import { Category } from "@/app/types";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -16,15 +17,27 @@ export async function GET(request: NextRequest) {
   }
 
   if (withUsage === "true") {
-    // Fetch categories and join usage_count from category_usage_summary
-    const categories = await prisma.categories.findMany();
-    const usageSummary = await prisma.category_usage_summary.findMany();
-    // Merge usage_count into categories
-    const categoriesWithUsage = categories.map((category) => {
-      const usage = usageSummary.find((u) => u.category_id === category.id);
-      return { ...category, usage_count: usage?.usage_count ?? 0 };
+    const usedCategoriesRaw: Category[] = await prisma.$queryRaw`
+      SELECT 
+      c.id AS category_id,
+      c.name AS category_name,
+      COUNT(dc.category_id) AS usage_count
+      FROM
+          (categories c
+          LEFT JOIN dataset_categories dc ON ((c.id = dc.category_id)))
+      GROUP BY c.id , c.name
+      ORDER BY usage_count DESC
+    `;
+
+    const usedCategories = usedCategoriesRaw.map((category: any) => {
+      return {
+        id: Number(category.category_id),
+        name: category.category_name,
+        usage_count: Number(category.usage_count),
+      };
     });
-    return NextResponse.json(categoriesWithUsage);
+
+    return NextResponse.json(usedCategories);
   }
 
   const categories = await prisma.categories.findMany();

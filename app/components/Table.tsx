@@ -6,7 +6,7 @@ interface TableProps {
 }
 
 export default function Table({ headers, rows }: TableProps) {
-  const [sortKey, setSortKey] = useState<string>(headers[0]);
+  const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const handleSort = (header: string) => {
@@ -18,16 +18,19 @@ export default function Table({ headers, rows }: TableProps) {
     }
   };
 
-  const sortedRows = [...rows].sort((a, b) => {
-    const aValue = a[sortKey];
-    const bValue = b[sortKey];
-    if (typeof aValue === "number" && typeof bValue === "number") {
-      return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
-    }
-    return sortDirection === "asc"
-      ? String(aValue).localeCompare(String(bValue))
-      : String(bValue).localeCompare(String(aValue));
-  });
+  let displayedRows = rows;
+  if (sortKey) {
+    displayedRows = [...rows].sort((a, b) => {
+      const aValue = a[sortKey];
+      const bValue = b[sortKey];
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
+      }
+      return sortDirection === "asc"
+        ? String(aValue).localeCompare(String(bValue))
+        : String(bValue).localeCompare(String(aValue));
+    });
+  }
 
   return (
     <table className="table">
@@ -50,7 +53,7 @@ export default function Table({ headers, rows }: TableProps) {
         </tr>
       </thead>
       <tbody>
-        {sortedRows.map((row, rowIndex) => (
+        {displayedRows.map((row, rowIndex) => (
           <tr
             key={row.id ?? rowIndex}
             className="hover:bg-gray-100 transition-colors duration-150 ease-in-out"

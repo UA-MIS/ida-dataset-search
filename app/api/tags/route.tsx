@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 //import a schema for validation
 import { prisma } from "@/prisma/client";
+import { Tag } from "@/app/types";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -17,15 +18,27 @@ export async function GET(request: NextRequest) {
   }
 
   if (withUsage === "true") {
-    // Fetch tags and join usage_count from tag_usage_summary
-    const tags = await prisma.tags.findMany();
-    const usageSummary = await prisma.tag_usage_summary.findMany();
-    // Merge usage_count into tags
-    const tagsWithUsage = tags.map((tag) => {
-      const usage = usageSummary.find((u) => u.tag_id === tag.id);
-      return { ...tag, usage_count: usage?.usage_count ?? 0 };
+    const usedTagsRaw: Tag[] = await prisma.$queryRaw`
+      SELECT 
+      t.id AS tag_id,
+      t.name AS tag_name,
+      COUNT(dt.tag_id) AS usage_count
+      FROM
+          (tags t
+          LEFT JOIN dataset_tags dt ON ((t.id = dt.tag_id)))
+      GROUP BY t.id , t.name
+      ORDER BY usage_count DESC
+    `;
+
+    const usedTags = usedTagsRaw.map((tag: any) => {
+      return {
+        id: Number(tag.tag_id),
+        name: tag.tag_name,
+        usage_count: Number(tag.usage_count),
+      };
     });
-    return NextResponse.json(tagsWithUsage);
+
+    return NextResponse.json(usedTags);
   }
 
   const tags = await prisma.tags.findMany();

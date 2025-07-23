@@ -71,37 +71,3 @@ model users {
   last_name   String   @db.VarChar(45)
   create_time DateTime @default(now()) @db.Timestamp(0)
 }
-
-model dataset_tags_view {
-  relation_id String @id
-  dataset_id  Int
-  tag_id      Int
-  name        String
-
-  @@map("dataset_tags_view")
-}
-
-model dataset_categories_view {
-  relation_id String @id
-  dataset_id  Int
-  category_id Int
-  name        String
-
-  @@map("dataset_categories_view")
-}
-
-model tag_usage_summary {
-  tag_id      Int    @id
-  tag_name    String
-  usage_count Int
-
-  @@map("tag_usage_summary")
-}
-
-model category_usage_summary {
-  category_id   Int    @id
-  category_name String
-  usage_count   Int
-
-  @@map("category_usage_summary")
-}
