@@ -1,14 +1,14 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import DatasetCard from "@/app/components/DatasetCard";
-import DatasetCardSkeleton from "@/app/components/DatasetCardSkeleton";
+import React, { useState } from "react";
+import DatasetContainerWithActivity from "@/app/components/DatasetContainerWithActivity";
+import LoadingMessage from "@/app/components/LoadingMessage";
 import NoResultsMessage from "@/app/components/NoResultsMessage";
 import Searchbar from "@/app/components/Searchbar";
 import SidebarFilter from "@/app/components/SidebarFilter";
 import Modal from "@/app/components/Modal";
 import EditDatasetForm from "@/app/components/EditDatasetForm";
-import AddDataForm from "@/app/components/AddDataForm";
 import ConfirmationMessage from "@/app/components/ConfirmationMessage";
+import AddDataWizard from "@/app/components/AddDataWizard";
 import { useSearchbar } from "@/app/hooks/useSearchbar";
 import { useFetchDatasets } from "@/app/hooks/useFetchDatasets";
 import { useDeleteDataset } from "@/app/hooks/useDeleteDataset";
@@ -226,46 +226,40 @@ const Datasets = () => {
         </div>
 
         {/* Datasets Grid */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          {datasetsLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <DatasetCardSkeleton key={index} />
-              ))}
-            </div>
-          ) : finalFilteredDatasets.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {finalFilteredDatasets.map((dataset) => (
-                <DatasetCard
-                  key={dataset.id}
-                  title={dataset.title}
-                  categories={dataset.categories || []}
-                  tags={dataset.tags || []}
-                  onDelete={() => confirmDeleteDataset(dataset)}
-                  onEdit={() => handleEdit(dataset)}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="flex justify-center items-center py-12">
-              <NoResultsMessage
-                title="No Datasets Found"
-                message="We couldn't find any datasets matching your search criteria. Try adjusting your search terms or filters."
+        {datasetsLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <LoadingMessage message="Loading datasets..." />
+          </div>
+        ) : finalFilteredDatasets.length > 0 ? (
+          <div className="grid grid-cols-1 gap-2 py-4">
+            {finalFilteredDatasets.map((dataset) => (
+              <DatasetContainerWithActivity
+                key={dataset.id}
+                dataset={dataset}
+                onEdit={handleEdit}
               />
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex justify-center items-center py-12">
+            <NoResultsMessage
+              title="No Datasets Found"
+              message="We couldn't find any datasets matching your search criteria. Try adjusting your search terms or filters."
+            />
+          </div>
+        )}
       </div>
-
       {/* Add Dataset Modal */}
       <Modal
         id="add-dataset-modal"
         header="Add New Dataset"
         body={
-          <AddDataForm
+          <AddDataWizard
             key={formKey}
-            onSuccess={refetch}
-            modalId="add-dataset-modal"
+            onSuccess={() => {
+              refetch();
+              handleAddDatasetModalClose();
+            }}
           />
         }
         size="xl"

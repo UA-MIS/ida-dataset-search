@@ -104,3 +104,35 @@ export async function DELETE(
     );
   }
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { dataset_id: string } }
+) {
+  const datasetId = parseInt(params.dataset_id);
+  if (isNaN(datasetId)) {
+    return NextResponse.json({ error: "Invalid dataset id" }, { status: 400 });
+  }
+
+  try {
+    // Fetch current isActive value
+    const dataset = await prisma.datasets.findUnique({
+      where: { id: datasetId },
+      select: { isActive: true },
+    });
+    if (!dataset) {
+      return NextResponse.json({ error: "Dataset not found" }, { status: 404 });
+    }
+    const newIsActive = dataset.isActive === "T" ? "F" : "T";
+    const updated = await prisma.datasets.update({
+      where: { id: datasetId },
+      data: { isActive: newIsActive },
+    });
+    return NextResponse.json(updated);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to update dataset status" },
+      { status: 500 }
+    );
+  }
+}

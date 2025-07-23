@@ -5,6 +5,8 @@ export interface Dataset {
   category: string;
   tags: string[];
   categories: string[];
+  type: string;
+  isActive: string;
 }
 
 export interface Tag {
@@ -26,4 +28,11 @@ export interface User {
   first_name: string;
   last_name: string;
   create_time: Date;
+}
+
+export interface AccessInfo {
+  id: number;
+  dataset_id: number;
+  field: string;
+  value: string;
 }
