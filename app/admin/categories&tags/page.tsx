@@ -17,6 +17,7 @@ import ConfirmationMessage from "@/app/components/ConfirmationMessage";
 import { useDeleteTag } from "@/app/hooks/useDeleteTag";
 import { useDeleteCategory } from "@/app/hooks/useDeleteCategory";
 import EditItemForm from "@/app/components/EditItemForm";
+import Pagination from "@/app/components/Pagination";
 
 const CategoriesTags = () => {
   const [formKey, setFormKey] = React.useState(0);
@@ -31,6 +32,9 @@ const CategoriesTags = () => {
     React.useState<Category | null>(null);
   const { datasets, isLoading: datasetsLoading } = useFetchDatasets();
   const [isClient, setIsClient] = useState(false);
+  const [categoryPage, setCategoryPage] = useState(1);
+  const [tagPage, setTagPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   const refreshTags = () => {
     fetch("/api/tags?withUsage=true")
@@ -193,14 +197,34 @@ const CategoriesTags = () => {
     setIsClient(true);
   }, []);
 
-  const { handleSearch, filteredItems: filteredTags } = useSearchbar(
+  const { handleSearch, filteredItems: filteredTagsRaw } = useSearchbar(
     adminTags,
     "name"
   );
   const {
     handleSearch: handleSearchCategory,
-    filteredItems: filteredCategories,
+    filteredItems: filteredCategoriesRaw,
   } = useSearchbar(adminCategories, "name");
+
+  // Paginate filtered arrays
+  const filteredTags = filteredTagsRaw;
+  const filteredCategories = filteredCategoriesRaw;
+  const paginatedTags = filteredTags.slice(
+    (tagPage - 1) * ITEMS_PER_PAGE,
+    tagPage * ITEMS_PER_PAGE
+  );
+  const paginatedCategories = filteredCategories.slice(
+    (categoryPage - 1) * ITEMS_PER_PAGE,
+    categoryPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page to 1 on search
+  useEffect(() => {
+    setCategoryPage(1);
+  }, [filteredCategories.length]);
+  useEffect(() => {
+    setTagPage(1);
+  }, [filteredTags.length]);
 
   React.useEffect(() => {
     const modal = document.getElementById(
@@ -255,96 +279,112 @@ const CategoriesTags = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-[750px] flex flex-col">
             <h3 className="text-xl font-semibold mb-4">Categories</h3>
             <SearchBar
               onSearch={handleSearchCategory}
               placeholder="Search categories..."
             />
-            <br />
-            {filteredCategories.length === 0 ? (
-              <NoResultsMessage
-                title="No Categories Found"
-                message="We couldn't find any categories matching your search criteria. Try adjusting your search terms."
-              />
-            ) : (
-              <Table
-                headers={["Name", "Associated Datasets", "Actions"]}
-                rows={filteredCategories.map((category: Category) => ({
-                  Name: category.name,
-                  "Associated Datasets": category.usage_count ?? 0,
-                  Actions: (
-                    <div className="flex gap-4">
-                      <button
-                        className="text-blue-500 hover:underline transition-colors"
-                        onClick={() => {
-                          openAssociateCategory(category);
-                          useModal("associate-category-modal");
-                        }}
-                      >
-                        Associate
-                      </button>
-                      <button
-                        className="text-yellow-400 hover:underline transition-colors"
-                        onClick={() => handleEditCategory(category)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="text-red-600 hover:underline transition-colors"
-                        onClick={() => confirmDeleteCategory(category)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  ),
-                }))}
-              />
-            )}
+            <div className="flex-grow overflow-y-auto">
+              {filteredCategories.length === 0 ? (
+                <NoResultsMessage
+                  title="No Categories Found"
+                  message="We couldn't find any categories matching your search criteria. Try adjusting your search terms."
+                />
+              ) : (
+                <Table
+                  headers={["Name", "Associated Datasets", "Actions"]}
+                  rows={paginatedCategories.map((category: Category) => ({
+                    Name: category.name,
+                    "Associated Datasets": category.usage_count ?? 0,
+                    Actions: (
+                      <div className="flex gap-4">
+                        <button
+                          className="text-blue-500 hover:underline transition-colors"
+                          onClick={() => {
+                            openAssociateCategory(category);
+                            useModal("associate-category-modal");
+                          }}
+                        >
+                          Associate
+                        </button>
+                        <button
+                          className="text-yellow-400 hover:underline transition-colors"
+                          onClick={() => handleEditCategory(category)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="text-red-600 hover:underline transition-colors"
+                          onClick={() => confirmDeleteCategory(category)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ),
+                  }))}
+                />
+              )}
+            </div>
+            <Pagination
+              currentPage={categoryPage}
+              totalItems={filteredCategories.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+              onPageChange={setCategoryPage}
+              alwaysShow
+            />
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-[750px] flex flex-col">
             <h3 className="text-xl font-semibold mb-4">Tags</h3>
             <SearchBar onSearch={handleSearch} placeholder="Search tags..." />
-            <br />
-            {filteredTags.length === 0 ? (
-              <NoResultsMessage
-                title="No Tags Found"
-                message="We couldn't find any tags matching your search criteria. Try adjusting your search terms."
-              />
-            ) : (
-              <Table
-                headers={["Name", "Associated Datasets", "Actions"]}
-                rows={filteredTags.map((tag: Tag) => ({
-                  Name: tag.name,
-                  "Associated Datasets": tag.usage_count ?? 0,
-                  Actions: (
-                    <div className="flex gap-4">
-                      <button
-                        className="text-blue-500 hover:underline transition-colors"
-                        onClick={() => {
-                          openAssociate(tag);
-                          useModal("associate-modal");
-                        }}
-                      >
-                        Associate
-                      </button>
-                      <button
-                        className="text-yellow-400 hover:underline transition-colors"
-                        onClick={() => handleEditTag(tag)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="text-red-600 hover:underline transition-colors"
-                        onClick={() => confirmDeleteTag(tag)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  ),
-                }))}
-              />
-            )}
+            <div className="flex-grow overflow-y-auto">
+              {filteredTags.length === 0 ? (
+                <NoResultsMessage
+                  title="No Tags Found"
+                  message="We couldn't find any tags matching your search criteria. Try adjusting your search terms."
+                />
+              ) : (
+                <Table
+                  headers={["Name", "Associated Datasets", "Actions"]}
+                  rows={paginatedTags.map((tag: Tag) => ({
+                    Name: tag.name,
+                    "Associated Datasets": tag.usage_count ?? 0,
+                    Actions: (
+                      <div className="flex gap-4">
+                        <button
+                          className="text-blue-500 hover:underline transition-colors"
+                          onClick={() => {
+                            openAssociate(tag);
+                            useModal("associate-modal");
+                          }}
+                        >
+                          Associate
+                        </button>
+                        <button
+                          className="text-yellow-400 hover:underline transition-colors"
+                          onClick={() => handleEditTag(tag)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="text-red-600 hover:underline transition-colors"
+                          onClick={() => confirmDeleteTag(tag)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ),
+                  }))}
+                />
+              )}
+            </div>
+            <Pagination
+              currentPage={tagPage}
+              totalItems={filteredTags.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+              onPageChange={setTagPage}
+              alwaysShow
+            />
           </div>
         </div>
       </div>
