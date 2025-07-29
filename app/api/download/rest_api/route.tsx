@@ -99,6 +99,20 @@ export async function GET(req: NextRequest) {
       try {
         const parser = new Json2CsvParser();
         const csv = parser.parse(data);
+
+        // Increment download count
+        try {
+          await prisma.datasets.update({
+            where: { id: parseInt(datasetId) },
+            data: { downloads: { increment: 1 } },
+          });
+        } catch (err) {
+          console.error(
+            "[DOWNLOAD API] Failed to increment download count:",
+            err
+          );
+        }
+
         return new Response(csv, {
           headers: {
             "Content-Type": "text/csv",
@@ -109,6 +123,16 @@ export async function GET(req: NextRequest) {
         console.error("[DOWNLOAD API] Failed to convert to CSV", err);
         return new Response("Failed to convert to CSV", { status: 500 });
       }
+    }
+
+    // Increment download count
+    try {
+      await prisma.datasets.update({
+        where: { id: parseInt(datasetId) },
+        data: { downloads: { increment: 1 } },
+      });
+    } catch (err) {
+      console.error("[DOWNLOAD API] Failed to increment download count:", err);
     }
 
     return new Response(JSON.stringify(data), {

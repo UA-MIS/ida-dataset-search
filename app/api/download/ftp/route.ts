@@ -160,12 +160,36 @@ export async function GET(req: NextRequest) {
     if (format === "csv") {
       const parser = new Json2CsvParser();
       const csv = parser.parse(rows);
+
+      // Increment download count
+      try {
+        await prisma.datasets.update({
+          where: { id: parseInt(datasetId) },
+          data: { downloads: { increment: 1 } },
+        });
+      } catch (err) {
+        console.error(
+          "[DOWNLOAD FTP] Failed to increment download count:",
+          err
+        );
+      }
+
       return new Response(csv, {
         headers: {
           "Content-Type": "text/csv",
           "Content-Disposition": `attachment; filename=\"${datasetName}.csv\"`,
         },
       });
+    }
+
+    // Increment download count
+    try {
+      await prisma.datasets.update({
+        where: { id: parseInt(datasetId) },
+        data: { downloads: { increment: 1 } },
+      });
+    } catch (err) {
+      console.error("[DOWNLOAD FTP] Failed to increment download count:", err);
     }
 
     return new Response(JSON.stringify(rows), {

@@ -5,10 +5,11 @@ import { Dataset } from "@/app/types";
 
 interface Props {
   dataset: Dataset;
-  onEdit: (dataset: Dataset) => void;
+  onEditDataset: (dataset: Dataset) => void;
+  onEditAccessInfo: (dataset: Dataset) => void;
 }
 
-const DatasetContainerWithActivity = ({ dataset, onEdit }: Props) => {
+const DatasetContainerWithActivity = ({ dataset, onEditDataset, onEditAccessInfo }: Props) => {
   const { active, loading, error, toggleActivity } = useDatasetActivity(
     dataset.id,
     dataset.isActive === "T"
@@ -20,7 +21,8 @@ const DatasetContainerWithActivity = ({ dataset, onEdit }: Props) => {
       tags={dataset.tags || []}
       active={active}
       onActivate={toggleActivity}
-      onEdit={() => onEdit(dataset)}
+      onEditDataset={() => onEditDataset(dataset)}
+      onEditAccessInfo={() => onEditAccessInfo(dataset)}
     />
   );
 };

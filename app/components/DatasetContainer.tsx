@@ -6,7 +6,8 @@ interface Props {
   title: string;
   tags: string[];
   categories: string[];
-  onEdit: () => void;
+  onEditDataset: () => void;
+  onEditAccessInfo: () => void;
   active: boolean;
   onActivate: () => void;
 }
@@ -19,7 +20,8 @@ const DatasetContainer = ({
   title,
   tags,
   categories,
-  onEdit,
+  onEditDataset,
+  onEditAccessInfo,
   active,
   onActivate,
 }: Props) => {
@@ -129,9 +131,15 @@ const DatasetContainer = ({
           <div className="flex flex-col items-end justify-between gap-4 border-l border-gray-100 pl-4">
             <button
               className="btn btn-sm btn-outline btn-warning w-full"
-              onClick={onEdit}
+              onClick={onEditDataset}
             >
-              Edit
+              Edit Dataset
+            </button>
+            <button
+              className="btn btn-sm btn-outline btn-info w-full"
+              onClick={onEditAccessInfo}
+            >
+              Edit Access Info
             </button>
             {active ? (
               <button
@@ -148,9 +156,6 @@ const DatasetContainer = ({
                 Activate
               </button>
             )}
-            <button className="btn btn-sm btn-outline btn-info w-full">
-              Access Info
-            </button>
           </div>
         </div>
       </div>

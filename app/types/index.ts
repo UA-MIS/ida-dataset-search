@@ -7,6 +7,7 @@ export interface Dataset {
   categories: string[];
   type: string;
   isActive: string;
+  downloads?: number;
 }
 
 export interface Tag {
@@ -35,4 +36,13 @@ export interface AccessInfo {
   dataset_id: number;
   field: string;
   value: string;
+}
+
+export interface Overview {
+  datasets: number;
+  active_datasets: number;
+  total_downloads: number;
+  users: number;
+  tags: number;
+  categories: number;
 }

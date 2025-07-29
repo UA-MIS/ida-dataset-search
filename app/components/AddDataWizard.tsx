@@ -3,6 +3,23 @@ import AddDataForm from "./AddDataForm";
 import AddAccessInfoForm from "./AddAccessInfoForm";
 import { Dataset, AccessInfo, Tag, Category } from "../types";
 
+// Define DatasetInfo type for local use
+export type DatasetInfo = {
+  type: string;
+  title: string;
+  description: string;
+  categories: string[];
+  tags: string[];
+};
+
+const emptyDataset: DatasetInfo = {
+  title: "",
+  description: "",
+  type: "",
+  categories: [],
+  tags: [],
+};
+
 const steps = ["Dataset Info", "Access Info", "Review & Submit"];
 
 function capitalize(str: string | undefined | null) {
@@ -10,23 +27,12 @@ function capitalize(str: string | undefined | null) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-const emptyDataset: Omit<Dataset, "id"> = {
-  title: "",
-  description: "",
-  category: "",
-  tags: [],
-  categories: [],
-  type: "",
-  isActive: "T",
-};
-
 const AddDataWizard: React.FC<{
   onSuccess: () => void;
   modalId?: string;
 }> = ({ onSuccess, modalId }) => {
   const [step, setStep] = useState(0);
-  const [datasetInfo, setDatasetInfo] =
-    useState<Omit<Dataset, "id">>(emptyDataset);
+  const [datasetInfo, setDatasetInfo] = useState<DatasetInfo>(emptyDataset);
   const [accessInfoList, setAccessInfoList] = useState<
     Omit<AccessInfo, "id" | "dataset_id">[]
   >([]);
@@ -250,7 +256,7 @@ const AddDataWizard: React.FC<{
             setDatasetInfo((prev) => ({ ...prev, [field]: value }))
           }
           disabled={loading}
-          existingTags={existingTags}
+          existingTags={existingTags.map((t) => t.name)}
           existingCategories={existingCategories.map((c) => c.name)}
         />
         <div className="flex justify-end gap-2 mt-4">

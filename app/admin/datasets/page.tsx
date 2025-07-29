@@ -17,6 +17,7 @@ import { useFetchCategories } from "@/app/hooks/useFetchCategories";
 import { useSidebarFilter } from "@/app/hooks/useSidebarFilter";
 import { Dataset } from "@/app/types";
 import { useModal } from "@/app/hooks/useModal";
+import EditAccessInfoForm from "@/app/components/EditAccessInfoForm";
 
 const Datasets = () => {
   const { datasets, isLoading: datasetsLoading, refetch } = useFetchDatasets();
@@ -24,6 +25,7 @@ const Datasets = () => {
   const { categories, isLoading: categoriesLoading } = useFetchCategories();
   const [showFilters, setShowFilters] = useState(false);
   const [editingDataset, setEditingDataset] = useState<Dataset | null>(null);
+  const [editingAccessInfo, setEditingAccessInfo] = useState<Dataset | null>(null);
   const [deletingDataset, setDeletingDataset] = useState<Dataset | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [formKey, setFormKey] = useState(0); // Add formKey state
@@ -48,9 +50,14 @@ const Datasets = () => {
     )
   );
 
-  const handleEdit = (dataset: Dataset) => {
+  const handleEditDataset = (dataset: Dataset) => {
     setEditingDataset(dataset);
     useModal("edit-dataset-modal");
+  };
+
+  const handleEditAccessInfo = (dataset: Dataset) => {
+    setEditingAccessInfo(dataset);
+    useModal("edit-access-info-modal");
   };
 
   const handleEditSuccess = () => {
@@ -236,7 +243,8 @@ const Datasets = () => {
               <DatasetContainerWithActivity
                 key={dataset.id}
                 dataset={dataset}
-                onEdit={handleEdit}
+                onEditDataset={() => handleEditDataset(dataset)}
+                onEditAccessInfo={() => handleEditAccessInfo(dataset)}
               />
             ))}
           </div>
@@ -302,6 +310,17 @@ const Datasets = () => {
           )
         }
         size="md"
+      />
+      <Modal
+        id="edit-access-info-modal"
+        header="Edit Access Info"
+        body={
+          <EditAccessInfoForm
+            dataset_id={editingAccessInfo?.id || 0}
+            modal_id="edit-access-info-modal"
+          />
+        }
+        size="xl"
       />
     </>
   );

@@ -34,6 +34,7 @@ model datasets {
   title              String                @db.VarChar(500)
   description        String?               @db.Text
   type               String                @db.VarChar(100)
+  downloads          Int                   @default(0)
   isActive           String                @db.Char(1)
   dataset_tags       dataset_tags[]
   dataset_categories dataset_categories[]
