@@ -1,22 +1,7 @@
 @import "tailwindcss";
-@plugin "daisyui";
-
-/* 
-Making sure tailwind and daisyUI work correctly:
-
-When you create the next-app, make sure to ask "Yes" for Tailwind
-
-Go to this website 
-https://tailwindcss.com/docs/installation/using-postcss
-
-Edit the postcss.config.mjs file to look the postcss.config.mjs file in Step 2 of the webstie
-Make sure "@import "tailwindcss"; is at the top of your CSS file... don't forget the ;
-
-Then go to this site: https://daisyui.com/docs/install/
-Do both step 1 and 2 in the command line
-Among the framework installation tutorials, find the the NextJS icon and click on it
-Disregard steps 1 and 2, and just double check your globals.css and postcss.config.mjs against these files again
-*/
+@plugin "daisyui" {
+  themes: light;
+}
 
 :root {
   --background: #ffffff;
@@ -28,13 +13,6 @@ Disregard steps 1 and 2, and just double check your globals.css and postcss.conf
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
