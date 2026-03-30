@@ -47,10 +47,11 @@ async function deleteClerkUser(clerkUserId: string) {
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { user_id: string } }
+  context: { params: Promise<{ user_id: string }> }
 ) {
+  const { user_id } = await context.params;
   const user = await prisma.users.findUnique({
-    where: { id: parseInt(params.user_id) },
+    where: { id: parseInt(user_id) },
   });
 
   if (!user) {
@@ -90,10 +91,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { user_id: string } }
+  context: { params: Promise<{ user_id: string }> }
 ) {
+  const { user_id } = await context.params;
   const user = await prisma.users.findUnique({
-    where: { id: parseInt(params.user_id) },
+    where: { id: parseInt(user_id) },
   });
 
   if (!user) {

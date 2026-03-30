@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  context: { params: { dataset_id: string } }
+  context: { params: Promise<{ dataset_id: string }> }
 ) {
   const { dataset_id } = await context.params;
 
@@ -35,10 +35,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { dataset_id: string } }
+  context: { params: Promise<{ dataset_id: string }> }
 ) {
+  const { dataset_id } = await context.params;
   const dataset = await prisma.datasets.findUnique({
-    where: { id: parseInt(params.dataset_id) },
+    where: { id: parseInt(dataset_id) },
   });
 
   if (!dataset) {
@@ -60,10 +61,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { dataset_id: string } }
+  context: { params: Promise<{ dataset_id: string }> }
 ) {
   try {
-    const datasetId = parseInt(params.dataset_id);
+    const { dataset_id } = await context.params;
+    const datasetId = parseInt(dataset_id);
 
     if (isNaN(datasetId)) {
       return NextResponse.json(
@@ -107,9 +109,10 @@ export async function DELETE(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { dataset_id: string } }
+  context: { params: Promise<{ dataset_id: string }> }
 ) {
-  const datasetId = parseInt(params.dataset_id);
+  const { dataset_id } = await context.params;
+  const datasetId = parseInt(dataset_id);
   if (isNaN(datasetId)) {
     return NextResponse.json({ error: "Invalid dataset id" }, { status: 400 });
   }

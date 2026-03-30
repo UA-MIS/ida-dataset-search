@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  context: { params: { tag_id: string } }
+  context: { params: Promise<{ tag_id: string }> }
 ) {
   const { tag_id } = await context.params;
 
@@ -17,10 +17,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { tag_id: string } }
+  context: { params: Promise<{ tag_id: string }> }
 ) {
+  const { tag_id } = await context.params;
   const tag = await prisma.tags.findUnique({
-    where: { id: parseInt(params.tag_id) },
+    where: { id: parseInt(tag_id) },
   });
 
   if (!tag) {
@@ -41,10 +42,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { tag_id: string } }
+  context: { params: Promise<{ tag_id: string }> }
 ) {
+  const { tag_id } = await context.params;
   const tag = await prisma.tags.findUnique({
-    where: { id: parseInt(params.tag_id) },
+    where: { id: parseInt(tag_id) },
   });
 
   if (!tag) {

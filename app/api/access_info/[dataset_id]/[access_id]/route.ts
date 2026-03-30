@@ -3,9 +3,9 @@ import { prisma } from "@/prisma/client";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { access_id: string; dataset_id: string } }
+  context: { params: Promise<{ access_id: string; dataset_id: string }> }
 ) {
-  const { access_id, dataset_id } = params;
+  const { access_id, dataset_id } = await context.params;
   const body = await request.json();
   const accessInfo = await prisma.dataset_access_info.update({
     where: { id: parseInt(access_id), dataset_id: parseInt(dataset_id) },
@@ -19,9 +19,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { access_id: string; dataset_id: string } }
+  context: { params: Promise<{ access_id: string; dataset_id: string }> }
 ) {
-  const { access_id, dataset_id } = params;
+  const { access_id, dataset_id } = await context.params;
   const accessInfo = await prisma.dataset_access_info.delete({
     where: { id: parseInt(access_id), dataset_id: parseInt(dataset_id) },
   });

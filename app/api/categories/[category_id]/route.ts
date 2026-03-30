@@ -3,7 +3,7 @@ import { prisma } from "@/prisma/client";
 
 export async function GET(
   request: NextRequest,
-  context: { params: { category_id: string } }
+  context: { params: Promise<{ category_id: string }> }
 ) {
   const { category_id } = await context.params;
 
@@ -17,10 +17,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { category_id: string } }
+  context: { params: Promise<{ category_id: string }> }
 ) {
+  const { category_id } = await context.params;
   const category = await prisma.categories.findUnique({
-    where: { id: parseInt(params.category_id) },
+    where: { id: parseInt(category_id) },
   });
 
   if (!category) {
@@ -41,10 +42,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { category_id: string } }
+  context: { params: Promise<{ category_id: string }> }
 ) {
+  const { category_id } = await context.params;
   const category = await prisma.categories.findUnique({
-    where: { id: parseInt(params.category_id) },
+    where: { id: parseInt(category_id) },
   });
 
   if (!category) {
