@@ -13,7 +13,8 @@ import { useModal } from "./hooks/useModal";
 import DownloadDatasetForm from "./components/DownloadDatasetForm";
 import LoadingMessage from "./components/LoadingMessage";
 import { useFetchActiveDatasets } from "./hooks/useFetchActiveDatasets";
-import { FaDatabase, FaFilter } from "react-icons/fa";
+import { FaDatabase, FaFilter, FaCog } from "react-icons/fa";
+import Link from "next/link";
 
 const HomePage = () => {
   const [selectedDatasetId, setSelectedDatasetId] = useState<number | null>(
@@ -70,6 +71,13 @@ const HomePage = () => {
                 </p>
               </div>
             </div>
+            <Link
+              href="/admin"
+              className="ml-auto inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <FaCog className="h-4 w-4" />
+              Admin
+            </Link>
           </div>
         </header>
 

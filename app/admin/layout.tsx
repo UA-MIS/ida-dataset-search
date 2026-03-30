@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import AdminSidebar from "../components/AdminSidebar";
 import Modal from "../components/Modal";
 import AddUserForm from "../components/AddUserForm";
@@ -8,7 +7,6 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Auth disabled for now — allow all access
   return (
     <>
       <div className="min-h-screen bg-gray-50">
@@ -16,6 +14,7 @@ export default async function AdminLayout({
           <div className="flex flex-col h-full">
             <div className="p-6">
               <h1 className="text-xl font-bold text-red-800">IDA Admin</h1>
+              <p className="text-xs text-gray-500 mt-1">Dataset Management</p>
             </div>
             <AdminSidebar />
           </div>
