@@ -3,7 +3,7 @@ import { prisma } from "@/prisma/client";
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { dataset_id: string; category_id: string } }
+  context: { params: Promise<{ dataset_id: string; category_id: string }> }
 ) {
   const { dataset_id, category_id } = await context.params;
   try {
