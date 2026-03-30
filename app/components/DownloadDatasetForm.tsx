@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FaFileAlt, FaCode, FaDownload } from "react-icons/fa";
 
 interface DownloadDatasetFormProps {
   datasetId?: number | null;
@@ -48,65 +49,34 @@ const DownloadDatasetForm: React.FC<DownloadDatasetFormProps> = ({
   }
 
   if (loading) {
-    return <div className="text-gray-500">Loading dataset info...</div>;
+    return <div className="text-gray-500 text-center py-4">Loading...</div>;
   }
 
   return (
-    <>
-      <div className="text-lg font-semibold text-gray-700 mb-4">
-        {datasetName ? (
-          <>
-            You are downloading:{" "}
-            <span className="text-red-700">{datasetName}</span>
-          </>
-        ) : (
-          <>Dataset selected</>
-        )}
-      </div>
-      <div className="mb-6 text-gray-600 text-center">
-        Please select the file type you want to download this dataset as:
-      </div>
-      <div className="flex gap-6">
+    <div className="text-center">
+      {datasetName && (
+        <p className="text-sm text-gray-500 mb-6">
+          Choose a format for{" "}
+          <span className="font-semibold text-gray-900">{datasetName}</span>
+        </p>
+      )}
+      <div className="grid grid-cols-2 gap-3">
         <a
           href={csvURL || ""}
-          className="px-6 py-3 bg-red-800 text-white rounded-lg font-semibold shadow hover:bg-red-700 transition-colors text-lg flex items-center gap-2"
+          className="flex flex-col items-center gap-2 px-4 py-5 bg-red-700 hover:bg-red-800 text-white rounded-xl font-medium transition-colors"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Download CSV
+          <FaFileAlt className="h-6 w-6" />
+          <span className="text-sm">Download CSV</span>
         </a>
         <a
           href={jsonURL || ""}
-          className="px-6 py-3 bg-gray-200 text-red-800 rounded-lg font-semibold shadow hover:bg-gray-300 transition-colors text-lg flex items-center gap-2 border border-red-200"
+          className="flex flex-col items-center gap-2 px-4 py-5 bg-white hover:bg-gray-50 text-gray-700 rounded-xl font-medium transition-colors border border-gray-200"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Download JSON
+          <FaCode className="h-6 w-6" />
+          <span className="text-sm">Download JSON</span>
         </a>
       </div>
-    </>
+    </div>
   );
 };
 

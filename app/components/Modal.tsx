@@ -19,7 +19,7 @@ const Modal = ({ id, header, body, footer, size = "md", height }: Props) => {
 
   return (
     <dialog id={id} className="modal">
-      <div className={`modal-box ${sizeClasses[size]} ${height || ""}`}>
+      <div className={`modal-box bg-white ${sizeClasses[size]} ${height || ""}`}>
         <h3 className="font-bold text-lg">{header}</h3>
         <div className="py-4">{body}</div>
         {footer && <div className="modal-action">{footer}</div>}
